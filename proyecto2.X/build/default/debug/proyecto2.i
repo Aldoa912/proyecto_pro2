@@ -2561,9 +2561,9 @@ ISR:
     BTFSS PIR1, 0 ; ((PIR1) and 07Fh), 0 = 1?
     GOTO ISRRBIF
     BCF PIR1, 0 ; Borramos la bandera del ((PIR1) and 07Fh), 0
-    MOVLW 0xC0
+    MOVLW 0xEE
     MOVWF TMR1L
-    MOVLW 0xBD
+    MOVLW 0x85
     MOVWF TMR1H
     INCF NL, F
 
@@ -2690,15 +2690,6 @@ MAIN:
     CLRF PORTA
     CLRF estado
     CLRF CONT20MS
-    CLRF NL
-    CLRF NH
-    CLRF ML
-    CLRF MH
-    CLRF HL
-    CLRF HH
-    CLRF DIS
-    CLRF CONTADOR
-    CLRF CONT_DIS
     MOVLW 178
     MOVWF TMR0 ; CARGAMOS EL VALOR DE N = DESBORDE 50mS
 
@@ -2716,9 +2707,9 @@ MAIN:
     BSF T1CON, 0 ; ((T1CON) and 07Fh), 0 enable
 
     BANKSEL TMR1L
-    MOVLW 0xC0
+    MOVLW 0xEE
     MOVWF TMR1L
-    MOVLW 0xBD
+    MOVLW 0x85
     MOVWF TMR1H
 
 SETCONTADOR:

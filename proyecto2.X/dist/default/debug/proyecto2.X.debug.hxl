@@ -1,28 +1,28 @@
 ### HEXMate logfile and output summary ###
 
 ### Command-line arguments ###
- dist/default/production\proyecto2.X.production.hex
- -Odist/default/production\proyecto2.X.production.hex
- -logfile=dist/default/production\proyecto2.X.production.hxl
+ dist/default/debug\proyecto2.X.debug.hex
+ -Odist/default/debug\proyecto2.X.debug.hex
+ -logfile=dist/default/debug\proyecto2.X.debug.hxl
  -addressing=2
 
 ### Memory Usage ###
  Intel Hex-file ranges:
-  0h - 1h		(dist/default/production\proyecto2.X.production.hex)
-  8h - 87h		(dist/default/production\proyecto2.X.production.hex)
-  200h - 571h		(dist/default/production\proyecto2.X.production.hex)
-  3000h - 3021h		(dist/default/production\proyecto2.X.production.hex)
-  400Eh - 4011h		(dist/default/production\proyecto2.X.production.hex)
+  0h - 1h		(dist/default/debug\proyecto2.X.debug.hex)
+  8h - 87h		(dist/default/debug\proyecto2.X.debug.hex)
+  200h - 55Fh		(dist/default/debug\proyecto2.X.debug.hex)
+  3000h - 3021h		(dist/default/debug\proyecto2.X.debug.hex)
+  400Eh - 4011h		(dist/default/debug\proyecto2.X.debug.hex)
  Unused ranges:
   2h - 7h
   88h - 1FFh
-  572h - 2FFFh
+  560h - 2FFFh
   3022h - 400Dh
 
 ### Hex Memory Map ###
  Legend:
   -- = Unused memory
-  H1 = Intel Hex-file         (dist/default/production\proyecto2.X.production.hex)
+  H1 = Intel Hex-file         (dist/default/debug\proyecto2.X.debug.hex)
 ----------------------------------------------------------
          | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
 ----------------------------------------------------------
@@ -90,8 +90,6 @@
 00000530 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000540 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000550 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-00000560 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-00000570 | H1 H1 -- -- -- -- -- -- -- -- -- -- -- -- -- --
 ----------------------------------------------------------
 00003000 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00003010 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
