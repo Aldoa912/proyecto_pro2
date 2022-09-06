@@ -1,12 +1,11 @@
 # 1 "proyecto2.s"
 # 1 "<built-in>" 1
 # 1 "proyecto2.s" 2
-;*******************************************************************************
 ; Universidad del Valle de Guatemala
 ; IE2023 ProgramaciOn de Microcontroladores
 ; Autor: ALDO AVILA
 ; Compilador: PIC-AS (v2.36), MPLAB X IDE (v6.00)
-; Proyecto: HDT2
+; Proyecto: PROYECTO
 ; Hardware: PIC16F887
 ; Creado: 23/08/22
 ;*******************************************************************************
@@ -2457,7 +2456,7 @@ stk_offset SET 0
 auto_size SET 0
 ENDM
 # 7 "C:\\Program Files\\Microchip\\xc8\\v2.40\\pic\\include\\xc.inc" 2 3
-# 12 "proyecto2.s" 2
+# 11 "proyecto2.s" 2
 ;*******************************************************************************
 ; Palabra de configuraciÃ³n
 ;*******************************************************************************
@@ -2479,14 +2478,13 @@ ENDM
 ; CONFIG2
   CONFIG BOR4V = BOR40V ; Brown-out Reset Selection bit (Brown-out Reset set to 4.0V)
   CONFIG WRT = OFF ; Flash Program Memory Self Write Enable bits (Write protection off)
+;*******************************************************************************
 PROCESSOR 16F887
-
 
 ;*******************************************************************************
 ; Variables
 ;*******************************************************************************
 PSECT udata_bank0
-
  cont10ms:
     DS 1
  NL:
@@ -2512,7 +2510,7 @@ PSECT udata_bank0
  DIS:
     DS 1
  CONTADOR:
-    DS 2
+    DS 3
  CONT_DIS:
     DS 1
  CONTADOR_F:
@@ -2525,9 +2523,6 @@ PSECT udata_bank0
     DS 1
  STATUS_TEMP:
     DS 1
- CONT20MS:
-    DS 1
-
 ;*******************************************************************************
 ; Vector Reset
 ;*******************************************************************************
@@ -2543,84 +2538,150 @@ PSECT CODE, delta=2, abs
     MOVWF W_TEMP
     SWAPF STATUS, W
     MOVWF STATUS_TEMP
-
-ISR:
+ ISR:
+    BCF INTCON, 0
+    BTFSS INTCON,2 ; ((INTCON) and 07Fh), 2 = 1 ?
+    GOTO ISRTMR1
+    BCF INTCON,2 ; Borramos bandera ((INTCON) and 07Fh), 2
+    MOVLW 100
+    MOVWF TMR0 ; CARGAMOS EL VALOR DE N = DESBORDE 50mS
+    INCF cont10ms, F
+    ;GOTO POP
+ISRTMR1:
     BANKSEL INTCON
     BCF INTCON, 0
-    BTFSS INTCON, 2 ; Esta encendido el bit ((INTCON) and 07Fh), 2?
-    GOTO ISRRBIF
-    BCF INTCON, 2 ; apagamos la bandera de ((INTCON) and 07Fh), 2
-    INCF CONT_DIS, F ; incrementamos la variable
-    MOVLW 178
-    MOVWF TMR0 ; reinicamos el valor de N en TMR0
-    GOTO POP
-
-     ISRTMR1:
-    ;BANKSEL INTCON
-    ;BCF INTCON, 0
     BTFSS PIR1, 0 ; ((PIR1) and 07Fh), 0 = 1?
     GOTO ISRRBIF
     BCF PIR1, 0 ; Borramos la bandera del ((PIR1) and 07Fh), 0
-    MOVLW 0xC0
+    MOVLW 0x8F
     MOVWF TMR1L
-    MOVLW 0xBD
+    MOVLW 0xFD
     MOVWF TMR1H
-    INCF NL, F
 
-ISRRBIF:
-    BTFSS INTCON, 0 ; ((INTCON) and 07Fh), 0 = 1 ?
-    GOTO POP ; SI NO ESTA ENCENDIDO VAMOS A POP
-    BTFSS PORTB, 0 ; REVISAMOS QUE EL PUERTO B SEA 1
-    GOTO CONTADOR_ISR ; SI ES 0 VAMOS AL CONTADOR_ISR
-    GOTO ESTADO0_ISR ; SI ES 1 CAMOS A ESTADO0_ISR
-    GOTO POP
+    GOTO DIS0
 
-CONTADOR_ISR: ; EN ESTA SUBRUTINA INCREMENTAMOS LA VARIABLE
-       ;CONTADOR CADA VEZ QUE SE PRECIONE EL BOTON DEL BIT0
-    BTFSS PORTB, 0
-    INCF CONTADOR, F
-    INCF NH, F
-    BCF INTCON, 0 ; ((INTCON) and 07Fh), 0 = 0
-    GOTO POP
-ESTADO0_ISR: ; EN ESTA SUBRUTINA AUMENTAMOS EL VALOR DEL PORTC
-       ; CADA VEZ QUE SE ACTIVE EL BIT 1 DE PORTB
-    MOVF CONTADOR, W
+DIS0:
+    MOVF CONT_DIS, W
     SUBLW 0 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
        ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO
        ; PASAMOS A ESTADO01_ISR
     BTFSS STATUS, 2
-    GOTO ESTADO1_ISR
-    BTFSS PORTB, 1
-    INCF NH, F
-    BTFSS PORTB, 0
-    BCF estado, 0
-    BCF INTCON, 0 ; ((INTCON) and 07Fh), 0 = 0
+    GOTO DIS1
+    BSF PORTA, 0
+    BCF PORTA, 1
+    BCF PORTA, 2
+    BCF PORTA, 3
+    BCF PORTA, 4
+    BCF PORTA, 5
+    MOVF NL, W ; MOVEMOS LO QUE ESTE EN CONTADOR A W
+    PAGESEL TABLA ; NOS UBICAMOS EN LA PAGINA DONDE SE ENCUENTRA LA TABLA
+    CALL TABLA ; LLAMAMOS A LA TABLA
+    PAGESEL DIS0
+    MOVWF PORTD ; MOVEMOS LOS DATOS DE W AL PORTC
+    INCF CONT_DIS
     GOTO POP
 
-ESTADO1_ISR: ; EN ESTA SUBRUTINA DECREMENTAMOS EL VALOR DEL PORTC
-       ; CADA VEZ QUE SE ACTIVE EL BIT 1 DE PORTB
-    MOVF CONTADOR, W
+DIS1:
+    MOVF CONT_DIS, W
     SUBLW 1 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
-       ; SI ESTE ES 1 SEGUIMOS EN LA SUBRUTINA, SINO
-       ; PASAMOS A CLEAR
+       ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO
+       ; PASAMOS A ESTADO01_ISR
     BTFSS STATUS, 2
-    GOTO CLEAR
-    BTFSS PORTB, 1
-    DECF NH, F
-    BTFSS PORTB, 0
-    BCF estado, 0
-    BCF INTCON, 0 ; ((INTCON) and 07Fh), 0 = 0
+    GOTO DIS2
+    BCF PORTA, 0
+    BSF PORTA, 1
+    BCF PORTA, 2
+    BCF PORTA, 3
+    BCF PORTA, 4
+    BCF PORTA, 5
+    MOVF NH, W ; MOVEMOS LO QUE ESTE EN CONTADOR2 A W
+    PAGESEL TABLA
+    CALL TABLA ; LLAMAMOS A LA TABLA
+    PAGESEL DIS0
+    MOVWF PORTD ; MOVEMOS LOS DATOS DE W AL PORTD
+    INCF CONT_DIS
     GOTO POP
 
-CLEAR: ; EN ESTA SUBRTINA VEMOS SI EL VALOR DEL CONTADOR
-       ; YA ALCANZO 4, SI ES ASI LO LIMPIAMOS
-    MOVF CONTADOR, W
-    SUBLW 4
+DIS2:
+    MOVF CONT_DIS, W
+    SUBLW 2 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
+       ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO
+       ; PASAMOS A ESTADO01_ISR
     BTFSS STATUS, 2
+    GOTO DIS3
+    BCF PORTA, 0
+    BCF PORTA, 1
+    BSF PORTA, 2
+    BCF PORTA, 3
+    MOVF ML, W ; MOVEMOS LO QUE ESTE EN CONTADOR2 A W
+    PAGESEL TABLA
+    CALL TABLA ; LLAMAMOS A LA TABLA
+    PAGESEL DIS0
+    MOVWF PORTD ; MOVEMOS LOS DATOS DE W AL PORTD
+    INCF CONT_DIS
     GOTO POP
-    CLRF CONTADOR
-    CLRF NH
+DIS3:
+    MOVF CONT_DIS, W
+    SUBLW 3 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
+       ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO
+       ; PASAMOS A ESTADO01_ISR
+    BTFSS STATUS, 2
+    GOTO DIS4
+    BCF PORTA, 0
+    BCF PORTA, 1
+    BCF PORTA, 2
+    BSF PORTA, 3
+    BCF PORTA, 4
+    BCF PORTA, 5
+    MOVF MH, W ; MOVEMOS LO QUE ESTE EN CONTADOR2 A W
+    PAGESEL TABLA
+    CALL TABLA ; LLAMAMOS A LA TABLA
+    PAGESEL DIS0
+    MOVWF PORTD ; MOVEMOS LOS DATOS DE W AL PORTD
+    INCF CONT_DIS
     GOTO POP
+
+DIS4:
+    MOVF CONT_DIS, W
+    SUBLW 4 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
+       ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO
+       ; PASAMOS A ESTADO01_ISR
+    BTFSS STATUS, 2
+    GOTO DIS5
+    BCF PORTA, 0
+    BCF PORTA, 1
+    BCF PORTA, 2
+    BCF PORTA, 3
+    BSF PORTA, 4
+    BCF PORTA, 5
+    MOVF HL, W ; MOVEMOS LO QUE ESTE EN CONTADOR2 A W
+    PAGESEL TABLA
+    CALL TABLA ; LLAMAMOS A LA TABLA
+    PAGESEL DIS0
+    MOVWF PORTD ; MOVEMOS LOS DATOS DE W AL PORTD
+    INCF CONT_DIS
+    GOTO POP
+
+DIS5:
+
+    BCF PORTA, 0
+    BCF PORTA, 1
+    BCF PORTA, 2
+    BCF PORTA, 3
+    BCF PORTA, 4
+    BSF PORTA, 5
+    MOVF HH, W ; MOVEMOS LO QUE ESTE EN CONTADOR2 A W
+    PAGESEL TABLA
+    CALL TABLA ; LLAMAMOS A LA TABLA
+    PAGESEL DIS0
+    MOVWF PORTD ; MOVEMOS LOS DATOS DE W AL PORTD
+    CLRF CONT_DIS
+    GOTO POP
+
+ISRRBIF:
+    BTFSS INTCON, 0 ; ((INTCON) and 07Fh), 0 = 1 ?
+    GOTO POP
+    BCF INTCON, 0
 
  POP:
     SWAPF STATUS_TEMP, W
@@ -2640,21 +2701,25 @@ PSECT CODE, delta=2, abs
 MAIN:
     BANKSEL OSCCON
 
-    BSF OSCCON, 6 ; ((OSCCON) and 07Fh), 6 SelecciÃ³n de 2MHz
-    BCF OSCCON, 5 ; ((OSCCON) and 07Fh), 5
-    BSF OSCCON, 4 ; ((OSCCON) and 07Fh), 4
+    BCF OSCCON, 6 ; ((OSCCON) and 07Fh), 6 SelecciÃ³n de 250 kHz
+    BSF OSCCON, 5 ; ((OSCCON) and 07Fh), 5
+    BCF OSCCON, 4 ; ((OSCCON) and 07Fh), 4
 
-    BSF OSCCON, 0 ; ((OSCCON) and 07Fh), 0 Reloj Interno
+    bsf OSCCON, 0 ; ((OSCCON) and 07Fh), 0 Reloj Interno
 
     BANKSEL TRISC
     CLRF TRISC ; Limpiar el registro TRISB
+    CLRF TRISD ; Puerto para el display 7 segmentos
     CLRF TRISA
-    CLRF TRISD
-
+    CLRF TRISB
     BSF TRISB, 0
     BSF TRISB, 1 ; Entradas para los botones
     BSF TRISB, 2
-    BSF TRISB, 3
+    BSF TRISB, 3 ; Entradas para los botones
+
+    BANKSEL ANSEL
+    CLRF ANSEL
+    CLRF ANSELH
 
     BANKSEL IOCB
 
@@ -2666,30 +2731,39 @@ MAIN:
     BANKSEL WPUB
     BSF WPUB, 0
     BSF WPUB, 1 ; Habilitando los Pullups en ((PORTB) and 07Fh), 0 y ((PORTB) and 07Fh), 1
-    BSF WPUB, 2
-    BSF WPUB, 3
+    BSF WPUB, 2 ; Habilitando los Pullups en ((PORTB) and 07Fh), 0 y ((PORTB) and 07Fh), 1
+    BSF WPUB, 3 ; Habilitando los Pullups en ((PORTB) and 07Fh), 0 y ((PORTB) and 07Fh), 1
 
-
-    BANKSEL ANSEL
-    CLRF ANSEL
-    CLRF ANSELH
 
     ; ConfiguraciÃ³n TMR0
     BANKSEL OPTION_REG
-    BCF OPTION_REG, 7 ; HABILITANDO PULLUPS PUERTO B
+    BCF OPTION_REG, 7
+
     BCF OPTION_REG, 5 ; ((OPTION_REG) and 07Fh), 5: FOSC/4 COMO RELOJ (MODO TEMPORIZADOR)
     BCF OPTION_REG, 3 ; ((OPTION_REG) and 07Fh), 3: ASIGNAMOS EL PRESCALER AL TMR0
 
-    BSF OPTION_REG, 2
-    BSF OPTION_REG, 1
-    BCF OPTION_REG, 0 ; ((OPTION_REG) and 07Fh), 2 -0: PRESCALER 1:128 SELECIONADO
+    BCF OPTION_REG, 2
+    BCF OPTION_REG, 1
+    BSF OPTION_REG, 0 ; ((OPTION_REG) and 07Fh), 2 -0: PRESCALER 1:4 SELECIONADO
+
+
+    BANKSEL T1CON
+    BSF T1CON, 5
+    BSF T1CON, 4 ; Prescaler de 1:8
+    BCF T1CON, 1 ; ((T1CON) and 07Fh), 1 Fosc/4 reloj interno
+    BSF T1CON, 0 ; ((T1CON) and 07Fh), 0 enable
+
+    BANKSEL TMR1L
+    MOVLW 0x8F
+    MOVWF TMR1L
+    MOVLW 0xFD
+    MOVWF TMR1H
 
     BANKSEL PORTC
-    CLRF PORTC ; Se limpia el puerto C D ^ A
-    CLRF PORTD
+    CLRF PORTC ; Se limpia el puerto B
     CLRF PORTA
-    CLRF estado
-    CLRF CONT20MS
+    CLRF PORTB
+    CLRF cont10ms ; Se limpia la variable cont50ms
     CLRF NL
     CLRF NH
     CLRF ML
@@ -2699,27 +2773,18 @@ MAIN:
     CLRF DIS
     CLRF CONTADOR
     CLRF CONT_DIS
-    MOVLW 178
-    MOVWF TMR0 ; CARGAMOS EL VALOR DE N = DESBORDE 50mS
 
-    BSF INTCON, 3 ; Se habilita la interrupciÃ³n del ((INTCON) and 07Fh), 3
-    BSF INTCON, 7 ; Se habilitan todas las interrupciones por el ((INTCON) and 07Fh), 7
-    BCF INTCON, 2 ; Apagamos la bandera ((INTCON) and 07Fh), 2 del TMR0
-    BSF INTCON, 5 ; Habilitando la interrupcion ((INTCON) and 07Fh), 5 TMR0
+    MOVLW 100
+    MOVWF TMR0 ; CARGAMOS EL VALOR DE N = DESBORDE 50mS
+    CLRF INTCON ; borrar banderas de interrupciÃ³n
     BCF PIR1, 0
     BSF PIE1, 0
-
-    BANKSEL T1CON
-    BSF T1CON, 5
-    BSF T1CON, 4 ; Prescaler de 1:8
-    BCF T1CON, 1 ; ((T1CON) and 07Fh), 1 Fosc/4 reloj interno
-    BSF T1CON, 0 ; ((T1CON) and 07Fh), 0 enable
-
-    BANKSEL TMR1L
-    MOVLW 0xC0
-    MOVWF TMR1L
-    MOVLW 0xBD
-    MOVWF TMR1H
+    BSF INTCON, 6
+    BSF INTCON, 5 ; Se habilita la interrupciÃ³n del TMR0 - ((INTCON) and 07Fh), 5
+    BSF INTCON, 7 ; Se habilitan todas las interrupciones por el ((INTCON) and 07Fh), 7
+    BSF INTCON, 3
+    BCF INTCON, 2
+    BCF INTCON, 0
 
 SETCONTADOR:
 
@@ -2778,117 +2843,27 @@ SETCONTADOR:
     ANDWF AH, F
     SWAPF AH, F
 
-    INCF DL,F
-    INCF AH,F
+    INCF DL
+    INCF AH
 
 LOOP:
-
-
-
-;DIS0:
-    MOVF CONT_DIS, W
-    ;SUBLW 0 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
-       ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO
-       ; PASAMOS A ESTADO01_ISR
-    BTFSS STATUS, 2
-    GOTO DIS1
-    MOVLW 0b00000001
-    MOVWF PORTA
-    MOVF NL, W ; MOVEMOS LO QUE ESTE EN CONTADOR A W
-    PAGESEL TABLA ; NOS UBICAMOS EN LA PAGINA DONDE SE ENCUENTRA LA TABLA
-    CALL TABLA ; LLAMAMOS A LA TABLA
-    PAGESEL DIS1
-    MOVWF PORTD ; MOVEMOS LOS DATOS DE W AL PORTC
-    ;INCF CONT_DIS, F
-    GOTO VERIFICACION2
-
-DIS1:
-    MOVF CONT_DIS, W
-    SUBLW 1 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
-       ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO
-       ; PASAMOS A ESTADO01_ISR
-    BTFSS STATUS, 2
-    GOTO DIS2
-
-    MOVLW 0b00000010
-    MOVWF PORTA
-    MOVF NH, W ; MOVEMOS LO QUE ESTE EN CONTADOR2 A W
-    PAGESEL TABLA
-    CALL TABLA ; LLAMAMOS A LA TABLA
-    PAGESEL DIS1
-    MOVWF PORTD ; MOVEMOS LOS DATOS DE W AL PORTD
-    ;INCF CONT_DIS, F
-    GOTO VERIFICACION2
-
-DIS2:
-    MOVF CONT_DIS, W
-    SUBLW 2 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
-       ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO
-       ; PASAMOS A ESTADO01_ISR
-    BTFSS STATUS, 2
-    GOTO DIS3
-
-    MOVLW 0b00000100
-    MOVWF PORTA
-    MOVF ML, W ; MOVEMOS LO QUE ESTE EN CONTADOR2 A W
-    PAGESEL TABLA
-    CALL TABLA ; LLAMAMOS A LA TABLA
-    PAGESEL DIS1
-    MOVWF PORTD ; MOVEMOS LOS DATOS DE W AL PORTD
-    ;INCF CONT_DIS, F
-    GOTO VERIFICACION2
-DIS3:
-    MOVF CONT_DIS, W
-    SUBLW 3 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
-       ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO
-       ; PASAMOS A ESTADO01_ISR
-    BTFSS STATUS, 2
-    GOTO DIS4
-    MOVLW 0b00001000
-    MOVWF PORTA
-    MOVF MH, W ; MOVEMOS LO QUE ESTE EN CONTADOR2 A W
-    PAGESEL TABLA
-    CALL TABLA ; LLAMAMOS A LA TABLA
-    PAGESEL DIS1
-    MOVWF PORTD ; MOVEMOS LOS DATOS DE W AL PORTD
-    ;INCF CONT_DIS, F
-    GOTO VERIFICACION2
-
-DIS4:
-    MOVF CONT_DIS, W
-    SUBLW 4 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
-       ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO
-       ; PASAMOS A ESTADO01_ISR
-    BTFSS STATUS, 2
-    GOTO DIS5
-    MOVLW 0b00010000
-    MOVWF PORTA
-    MOVF HL, W ; MOVEMOS LO QUE ESTE EN CONTADOR2 A W
-    PAGESEL TABLA
-    CALL TABLA ; LLAMAMOS A LA TABLA
-    PAGESEL DIS1
-    MOVWF PORTD ; MOVEMOS LOS DATOS DE W AL PORTD
-    ;INCF CONT_DIS, F
-    GOTO VERIFICACION2
-
-DIS5:
-    MOVLW 0b00100000
-    MOVWF PORTA
-    MOVF HH, W ; MOVEMOS LO QUE ESTE EN CONTADOR2 A W
-    PAGESEL TABLA
-    CALL TABLA ; LLAMAMOS A LA TABLA
-    PAGESEL DIS1
-    MOVWF PORTD ; MOVEMOS LOS DATOS DE W AL PORTD
-    CLRF CONT_DIS
-
     GOTO VERIFICACION2
 
 
+
+VERIFICACION:
+    MOVF cont10ms, W
+    SUBLW 100
+    BTFSS STATUS, 2 ; verificamos bandera z
+    GOTO VERIFICACION ; REGRESAMOS A VERIFICACION HASTA QUE LA RESTA DE 0
+    CLRF cont10ms ; LIMPIAMOS EL CONT20MS
+    INCF NL, F ; Incrementamos el CONTADOR
+    GOTO LOOP ; Regresamos a la etiqueta LOOP
 VERIFICACION2:
     MOVF NL, W ; MOVEMOS LOS DATOS DE CONTADOR A W
     SUBLW 10 ; SE LO RESTAMOS A 10
     BTFSS STATUS, 2 ; SI EL RESULTADO ES 0 NOS SALTAMOS GOTO VERIFICACION
-    GOTO LOOP ; CAMOS A VERIFICACION
+    GOTO VERIFICACION ; CAMOS A VERIFICACION
     CLRF NL ; CARGAMOS UN 0 A W
     INCF NH, F
     GOTO VERIFICACION3 ; VAMOS A DISPLAY
@@ -3191,7 +3166,6 @@ PSECT CODE, ABS, DELTA=2
     RETLW 0b01011110
     RETLW 0b01111001
     RETLW 0b01110001
-
 ;*******************************************************************************
 ; Fin de CÃ³digo
 ;*******************************************************************************
