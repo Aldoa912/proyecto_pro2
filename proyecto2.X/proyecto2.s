@@ -113,17 +113,27 @@ PSECT CODE, delta=2, abs
     MOVWF W_TEMP
     SWAPF STATUS, W
     MOVWF STATUS_TEMP
+ISRTMR1:
+    ;BANKSEL INTCON
+    ;BCF INTCON, 0
+    BTFSS PIR1, 0	    ; TMR1IF = 1?
+    GOTO ISR
+    BCF PIR1, 0		    ; Borramos la bandera del TMR1IF
+    MOVLW 0x7C
+    MOVWF TMR1L
+    MOVLW 0xE1
+    MOVWF TMR1H
+    INCF NL
+    
  ISR:
     ;BCF INTCON, 0
     BTFSS INTCON,2	   ; T0IF = 1 ?
     GOTO ISRRBIF
     BCF INTCON,2	    ; Borramos bandera T0IF 
-    MOVLW 100
+    MOVLW 200
     MOVWF TMR0		; CARGAMOS EL VALOR DE N = DESBORDE 50mS
     INCF cont10ms, F
     ;GOTO POP
-
-    
     GOTO DIS0
     
 DIS0:
@@ -295,12 +305,24 @@ MAIN:
     BSF WPUB, 3
     
     BANKSEL PIE1
+    BSF PIE1, 0
     
     BANKSEL PIR1
+    BCF PIR1, 0
     
     BANKSEL T1CON
+    BSF T1CON, 5
+    BSF T1CON, 4	; Prescaler de 1:8  
+    BCF T1CON, 1	; TMR1CS Fosc/4 reloj interno
+    BSF T1CON, 0	; TMR1ON enable
     
     BANKSEL TMR1L
+    MOVLW 0x7C
+    MOVWF TMR1L
+    MOVLW 0xE1
+    MOVWF TMR1H
+    
+    
     ; ConfiguraciÃ³n TMR0
 
     
@@ -311,7 +333,7 @@ MAIN:
     CLRF estado
     CLRF CONT20MS
     CLRF CONT_DIS
-    MOVLW 100
+    MOVLW 200
     MOVWF TMR0		; CARGAMOS EL VALOR DE N = DESBORDE 50mS
     
 
