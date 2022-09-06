@@ -294,6 +294,13 @@ MAIN:
     BSF WPUB, 2
     BSF WPUB, 3
     
+    BANKSEL PIE1
+    
+    BANKSEL PIR1
+    
+    BANKSEL T1CON
+    
+    BANKSEL TMR1L
     ; ConfiguraciÃ³n TMR0
 
     
