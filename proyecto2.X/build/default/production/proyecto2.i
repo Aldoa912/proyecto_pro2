@@ -2556,6 +2556,8 @@ PSECT CODE, delta=2, abs
 ;*******************************************************************************
 ; Vector ISR Interrupciones
 ;*******************************************************************************
+PSECT CODE, delta=2, abs
+ ORG 0x0004
  PUSH:
     MOVWF W_TEMP
     SWAPF STATUS, W
