@@ -2700,6 +2700,10 @@ MAIN:
 
     BSF OSCCON, 0 ; ((OSCCON) and 07Fh), 0 Reloj Interno
 
+    BANKSEL ANSEL
+    CLRF ANSEL
+    CLRF ANSELH
+
     BANKSEL TRISC
     CLRF TRISC ; Limpiar el registro TRISB
     CLRF TRISA
@@ -2708,7 +2712,23 @@ MAIN:
     BSF TRISB, 0
     BSF TRISB, 1 ; Entradas para los botones
     BSF TRISB, 2
-    BSF TRISB,3
+    BSF TRISB, 3
+
+    BANKSEL OPTION_REG
+    BCF OPTION_REG, 7 ; HABILITANDO PULLUPS PUERTO B
+    BCF OPTION_REG, 5 ; ((OPTION_REG) and 07Fh), 5: FOSC/4 COMO RELOJ (MODO TEMPORIZADOR)
+    BCF OPTION_REG, 3 ; ((OPTION_REG) and 07Fh), 3: ASIGNAMOS EL PRESCALER AL TMR0
+
+    BSF OPTION_REG, 2
+    BSF OPTION_REG, 1
+    BCF OPTION_REG, 0 ; ((OPTION_REG) and 07Fh), 2 -0: PRESCALER 1:128 SELECIONADO
+
+    BANKSEL INTCON
+    BSF INTCON, 3 ; Se habilita la interrupciÃ³n del ((INTCON) and 07Fh), 3
+    BSF INTCON, 7 ; Se habilitan todas las interrupciones por el ((INTCON) and 07Fh), 7
+    BCF INTCON, 2 ; Apagamos la bandera ((INTCON) and 07Fh), 2 del TMR0
+    BSF INTCON, 5 ; Habilitando la interrupcion ((INTCON) and 07Fh), 5 TMR0
+    BCF INTCON, 0
 
     BANKSEL IOCB
 
@@ -2723,20 +2743,8 @@ MAIN:
     BSF WPUB, 2
     BSF WPUB, 3
 
-
-    BANKSEL ANSEL
-    CLRF ANSEL
-    CLRF ANSELH
-
     ; ConfiguraciÃ³n TMR0
-    BANKSEL OPTION_REG
-    BCF OPTION_REG, 7 ; HABILITANDO PULLUPS PUERTO B
-    BCF OPTION_REG, 5 ; ((OPTION_REG) and 07Fh), 5: FOSC/4 COMO RELOJ (MODO TEMPORIZADOR)
-    BCF OPTION_REG, 3 ; ((OPTION_REG) and 07Fh), 3: ASIGNAMOS EL PRESCALER AL TMR0
 
-    BSF OPTION_REG, 2
-    BSF OPTION_REG, 1
-    BCF OPTION_REG, 0 ; ((OPTION_REG) and 07Fh), 2 -0: PRESCALER 1:128 SELECIONADO
 
     BANKSEL PORTC
     CLRF PORTC ; Se limpia el puerto C D ^ A
@@ -2748,13 +2756,12 @@ MAIN:
     MOVLW 100
     MOVWF TMR0 ; CARGAMOS EL VALOR DE N = DESBORDE 50mS
 
-    ;BSF INTCON, 3 ; Se habilita la interrupciÃ³n del ((INTCON) and 07Fh), 3
-    BSF INTCON, 7 ; Se habilitan todas las interrupciones por el ((INTCON) and 07Fh), 7
-    BCF INTCON, 2 ; Apagamos la bandera ((INTCON) and 07Fh), 2 del TMR0
-    BSF INTCON, 5 ; Habilitando la interrupcion ((INTCON) and 07Fh), 5 TMR0
+
 
 
 LOOP:
+    GOTO DIS_0
+DIS_0:
     MOVF CONT_DIS, W
     ;SUBLW 0 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
        ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO

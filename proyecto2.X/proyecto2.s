@@ -250,6 +250,10 @@ MAIN:
     BCF OSCCON, 4	; IRCF0
     
     BSF OSCCON, 0	; SCS Reloj Interno
+   
+    BANKSEL ANSEL
+    CLRF ANSEL
+    CLRF ANSELH
     
     BANKSEL TRISC
     CLRF TRISC		; Limpiar el registro TRISB
@@ -259,7 +263,23 @@ MAIN:
     BSF TRISB, 0
     BSF TRISB, 1	; Entradas para los botones
     BSF TRISB, 2
-    BSF TRISB,3
+    BSF TRISB, 3
+    
+    BANKSEL OPTION_REG
+    BCF OPTION_REG, 7	; HABILITANDO PULLUPS PUERTO B
+    BCF OPTION_REG, 5	; T0CS: FOSC/4 COMO RELOJ (MODO TEMPORIZADOR)
+    BCF OPTION_REG, 3	; PSA: ASIGNAMOS EL PRESCALER AL TMR0
+    
+    BSF OPTION_REG, 2
+    BSF OPTION_REG, 1
+    BCF OPTION_REG, 0	; PS2-0: PRESCALER 1:128 SELECIONADO 
+    
+    BANKSEL INTCON
+    BSF INTCON,	3	; Se habilita la interrupciÃ³n del RBIE
+    BSF INTCON, 7	; Se habilitan todas las interrupciones por el GIE
+    BCF INTCON, 2	; Apagamos la bandera T0IF del TMR0
+    BSF INTCON, 5	; Habilitando la interrupcion T0IE TMR0
+    BCF INTCON, 0
     
     BANKSEL IOCB
     
@@ -274,20 +294,8 @@ MAIN:
     BSF WPUB, 2
     BSF WPUB, 3
     
-    
-    BANKSEL ANSEL
-    CLRF ANSEL
-    CLRF ANSELH
-    
     ; ConfiguraciÃ³n TMR0
-    BANKSEL OPTION_REG
-    BCF OPTION_REG, 7	; HABILITANDO PULLUPS PUERTO B
-    BCF OPTION_REG, 5	; T0CS: FOSC/4 COMO RELOJ (MODO TEMPORIZADOR)
-    BCF OPTION_REG, 3	; PSA: ASIGNAMOS EL PRESCALER AL TMR0
-    
-    BSF OPTION_REG, 2
-    BSF OPTION_REG, 1
-    BCF OPTION_REG, 0	; PS2-0: PRESCALER 1:128 SELECIONADO 
+
     
     BANKSEL PORTC
     CLRF PORTC		; Se limpia el puerto C D ^ A
@@ -299,13 +307,12 @@ MAIN:
     MOVLW 100
     MOVWF TMR0		; CARGAMOS EL VALOR DE N = DESBORDE 50mS
     
-    ;BSF INTCON,	3	; Se habilita la interrupciÃ³n del RBIE
-    BSF INTCON, 7	; Se habilitan todas las interrupciones por el GIE
-    BCF INTCON, 2	; Apagamos la bandera T0IF del TMR0
-    BSF INTCON, 5	; Habilitando la interrupcion T0IE TMR0
+
   
    
 LOOP:
+    GOTO DIS_0
+DIS_0:
     MOVF CONT_DIS, W
     ;SUBLW 0		    ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
 			    ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO
