@@ -9,13 +9,13 @@
 ### Memory Usage ###
  Intel Hex-file ranges:
   0h - 1h		(dist/default/production\proyecto2.X.production.hex)
-  8h - 95h		(dist/default/production\proyecto2.X.production.hex)
+  8h - 97h		(dist/default/production\proyecto2.X.production.hex)
   C8h - E9h		(dist/default/production\proyecto2.X.production.hex)
   200h - 563h		(dist/default/production\proyecto2.X.production.hex)
   400Eh - 4011h		(dist/default/production\proyecto2.X.production.hex)
  Unused ranges:
   2h - 7h
-  96h - C7h
+  98h - C7h
   EAh - 1FFh
   564h - 400Dh
 
@@ -35,7 +35,7 @@
 00000060 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000070 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000080 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-00000090 | H1 H1 H1 H1 H1 H1 -- -- -- -- -- -- -- -- -- --
+00000090 | H1 H1 H1 H1 H1 H1 H1 H1 -- -- -- -- -- -- -- --
 ----------------------------------------------------------
 000000C0 | -- -- -- -- -- -- -- -- H1 H1 H1 H1 H1 H1 H1 H1
 000000D0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
