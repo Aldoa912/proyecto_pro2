@@ -175,10 +175,11 @@ DIS5:
     GOTO POP
     
 ISRRBIF:
-    BCF INTCON, 0
     BTFSS INTCON, 0	    ; RBIF = 1 ?
     GOTO POP		    ; SI NO ESTA ENCENDIDO VAMOS A POP
     BCF INTCON, 0
+    BCF INTCON, 2
+    BCF PIR1, 0
     GOTO POP
     
     
@@ -231,11 +232,13 @@ MAIN:
     BCF OPTION_REG, 0	; PS2-0: PRESCALER 1:128 SELECIONADO 
     
     BANKSEL INTCON
+
     BSF INTCON,	3	; Se habilita la interrupciÃ³n del RBIE
     BSF INTCON, 7	; Se habilitan todas las interrupciones por el GIE
     BCF INTCON, 2	; Apagamos la bandera T0IF del TMR0
     BSF INTCON, 5	; Habilitando la interrupcion T0IE TMR0
     BCF INTCON, 0
+
     
     BANKSEL IOCB
     
