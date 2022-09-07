@@ -2538,8 +2538,6 @@ PSECT udata_bank0
     DS 2
  CONTADOR_M:
     DS 1
- estado:
-    DS 1
  W_TEMP:
     DS 1
  STATUS_TEMP:
@@ -2563,8 +2561,6 @@ PSECT CODE, delta=2, abs
     SWAPF STATUS, W
     MOVWF STATUS_TEMP
 ISRTMR1:
-    ;BANKSEL INTCON
-    ;BCF INTCON, 0
     BTFSS PIR1, 0 ; ((PIR1) and 07Fh), 0 = 1?
     GOTO ISR
     BCF PIR1, 0 ; Borramos la bandera del ((PIR1) and 07Fh), 0
@@ -2575,7 +2571,6 @@ ISRTMR1:
     INCF NL
 
  ISR:
-    ;BCF INTCON, 0
     BTFSS INTCON,2 ; ((INTCON) and 07Fh), 2 = 1 ?
     GOTO ISRRBIF
     BCF INTCON,2 ; Borramos bandera ((INTCON) and 07Fh), 2
@@ -2592,13 +2587,8 @@ DIS0:
        ; PASAMOS A ESTADO01_ISR
     BTFSS STATUS, 2
     GOTO DIS1
-    BSF PORTA, 0
-    BCF PORTA, 1
-    BCF PORTA, 2
-    BCF PORTA, 3
-    BCF PORTA, 4
-    BCF PORTA, 5
-
+    MOVLW 0b00000001
+    MOVWF PORTA
     INCF CONT_DIS
     GOTO POP
 
@@ -2609,13 +2599,8 @@ DIS1:
        ; PASAMOS A ESTADO01_ISR
     BTFSS STATUS, 2
     GOTO DIS2
-    BCF PORTA, 0
-    BSF PORTA, 1
-    BCF PORTA, 2
-    BCF PORTA, 3
-    BCF PORTA, 4
-    BCF PORTA, 5
-
+    MOVLW 0b00000010
+    MOVWF PORTA
     INCF CONT_DIS
     GOTO POP
 
@@ -2626,13 +2611,8 @@ DIS2:
        ; PASAMOS A ESTADO01_ISR
     BTFSS STATUS, 2
     GOTO DIS3
-    BCF PORTA, 0
-    BCF PORTA, 1
-    BSF PORTA, 2
-    BCF PORTA, 3
-    BCF PORTA, 4
-    BCF PORTA, 5
-
+    MOVLW 0b00000100
+    MOVWF PORTA
     INCF CONT_DIS
     GOTO POP
 DIS3:
@@ -2642,13 +2622,8 @@ DIS3:
        ; PASAMOS A ESTADO01_ISR
     BTFSS STATUS, 2
     GOTO DIS4
-    BCF PORTA, 0
-    BCF PORTA, 1
-    BCF PORTA, 2
-    BSF PORTA, 3
-    BCF PORTA, 4
-    BCF PORTA, 5
-
+    MOVLW 0b00001000
+    MOVWF PORTA
     INCF CONT_DIS
     GOTO POP
 
@@ -2659,32 +2634,24 @@ DIS4:
        ; PASAMOS A ESTADO01_ISR
     BTFSS STATUS, 2
     GOTO DIS5
-    BCF PORTA, 0
-    BCF PORTA, 1
-    BCF PORTA, 2
-    BCF PORTA, 3
-    BSF PORTA, 4
-    BCF PORTA, 5
-
+    MOVLW 0b00010000
+    MOVWF PORTA
     INCF CONT_DIS
     GOTO POP
 
 DIS5:
 
-    BCF PORTA, 0
-    BCF PORTA, 1
-    BCF PORTA, 2
-    BCF PORTA, 3
-    BCF PORTA, 4
-    BSF PORTA, 5
-
+    MOVLW 0b00100000
+    MOVWF PORTA
     CLRF CONT_DIS
     GOTO POP
 
 ISRRBIF:
     BTFSS INTCON, 0 ; ((INTCON) and 07Fh), 0 = 1 ?
-    GOTO POP
+    GOTO POP ; SI NO ESTA ENCENDIDO VAMOS A POP
     BCF INTCON, 0
+    GOTO POP
+
 
  POP:
     SWAPF STATUS_TEMP, W
@@ -2723,6 +2690,7 @@ MAIN:
     BSF TRISB, 1 ; Entradas para los botones
     BSF TRISB, 2
     BSF TRISB, 3
+    BSF TRISB, 4
 
     BANKSEL OPTION_REG
     BCF OPTION_REG, 7 ; HABILITANDO PULLUPS PUERTO B
@@ -2740,18 +2708,21 @@ MAIN:
     BSF INTCON, 5 ; Habilitando la interrupcion ((INTCON) and 07Fh), 5 TMR0
     BCF INTCON, 0
 
+    BANKSEL WPUB
+    BSF WPUB, 0
+    BSF WPUB, 1 ; Habilitando los Pullups en ((PORTB) and 07Fh), 0 y ((PORTB) and 07Fh), 1
+    BSF WPUB, 2
+    BSF WPUB, 3
+    BSF WPUB, 4
+
     BANKSEL IOCB
 
     BSF IOCB, 0
     BSF IOCB, 1 ; Habilitando ((PORTB) and 07Fh), 0 y ((PORTB) and 07Fh), 1 para las ISR de ((INTCON) and 07Fh), 3
     BSF IOCB, 2
     BSF IOCB, 3
+    BSF IOCB, 4
 
-    BANKSEL WPUB
-    BSF WPUB, 0
-    BSF WPUB, 1 ; Habilitando los Pullups en ((PORTB) and 07Fh), 0 y ((PORTB) and 07Fh), 1
-    BSF WPUB, 2
-    BSF WPUB, 3
 
     BANKSEL PIE1
     BSF PIE1, 0
@@ -2779,7 +2750,8 @@ MAIN:
     CLRF PORTC ; Se limpia el puerto C D ^ A
     CLRF PORTD
     CLRF PORTA
-    CLRF estado
+
+
     CLRF CONT20MS
     CLRF CONT_DIS
     MOVLW 220
@@ -2848,7 +2820,11 @@ SETCONTADOR:
 
 
 LOOP:
+
     GOTO DIS_0
+
+
+
 DIS_0:
     MOVF CONT_DIS, W
     ;SUBLW 0 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
