@@ -114,13 +114,13 @@ ISRRBIF:
     
 MOD_HORA:
     MOVF CONTADOR_ES, W
-    SUBLW 3
+    SUBLW 2
     BTFSS STATUS, 2
     GOTO SALIDA
     BTFSS PORTB, 1
-    INCF DL, F
+    INCF ML, F
     BTFSS PORTB, 3
-    INCF AL, F
+    INCF HL, F
     BCF RBIF	
     GOTO SALIDA 
     
