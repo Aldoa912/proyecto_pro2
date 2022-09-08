@@ -10,6 +10,28 @@
 ; Hardware: PIC16F887
 ; Creado: 23/08/22
 ;*******************************************************************************
+;*******************************************************************************
+; Palabra de configuraciÃƒÂ³n
+;*******************************************************************************
+ ; CONFIG1
+  CONFIG FOSC = INTRC_NOCLKOUT ; Oscillator Selection bits (INTOSCIO oscillator
+    ; : I/O function on RA6/OSC2/CLKOUT pin, I/O
+    ; function on RA7/OSC1/CLKIN)
+  CONFIG WDTE = OFF ; Watchdog Timer Enable bit (WDT disabled and
+    ; can be enabled by SWDTEN bit of the WDTCON register)
+  CONFIG PWRTE = OFF ; Power-up Timer Enable bit (PWRT disabled)
+  CONFIG MCLRE = OFF ; RE3/MCLR pin function select bit (RE3/MCLR pin function is digital input, MCLR internally tied to VDD)
+  CONFIG CP = OFF ; Code Protection bit (Program memory code protection is disabled)
+  CONFIG CPD = OFF ; Data Code Protection bit (Data memory code protection is disabled)
+  CONFIG BOREN = OFF ; Brown Out Reset Selection bits (BOR disabled)
+  CONFIG IESO = OFF ; Internal External Switchover bit (Internal/External Switchover mode is disabled)
+  CONFIG FCMEN = OFF ; Fail-Safe Clock Monitor Enabled bit (Fail-Safe Clock Monitor is disabled)
+  CONFIG LVP = OFF ; Low Voltage Programming Enable bit (RB3 pin has digital I/O, HV on MCLR must be used for programming)
+
+; CONFIG2
+  CONFIG BOR4V = BOR40V ; Brown-out Reset Selection bit (Brown-out Reset set to 4.0V)
+  CONFIG WRT = OFF ; Flash Program Memory Self Write Enable bits (Write protection off)
+
 PROCESSOR 16F887
 
 # 1 "C:\\Program Files\\Microchip\\xc8\\v2.40\\pic\\include\\xc.inc" 1 3
@@ -2457,52 +2479,8 @@ stk_offset SET 0
 auto_size SET 0
 ENDM
 # 7 "C:\\Program Files\\Microchip\\xc8\\v2.40\\pic\\include\\xc.inc" 2 3
-# 12 "proyecto2.s" 2
-;*******************************************************************************
-; Palabra de configuraciÃ³n
-;*******************************************************************************
- ; CONFIG1
-  CONFIG FOSC = INTRC_NOCLKOUT ; Oscillator Selection bits (INTOSCIO oscillator
-    ; : I/O function on ((PORTA) and 07Fh), 6/OSC2/CLKOUT pin, I/O
-    ; function on ((PORTA) and 07Fh), 7/OSC1/CLKIN)
-  CONFIG WDTE = OFF ; Watchdog Timer Enable bit (WDT disabled and
-    ; can be enabled by ((WDTCON) and 07Fh), 0 bit of the WDTCON register)
-  CONFIG PWRTE = OFF ; Power-up Timer Enable bit (PWRT disabled)
-  CONFIG MCLRE = OFF ; ((PORTE) and 07Fh), 3/MCLR pin function select bit (((PORTE) and 07Fh), 3/MCLR pin function is digital input, MCLR internally tied to VDD)
-  CONFIG CP = OFF ; Code Protection bit (Program memory code protection is disabled)
-  CONFIG CPD = OFF ; Data Code Protection bit (Data memory code protection is disabled)
-  CONFIG BOREN = OFF ; Brown Out Reset Selection bits (BOR disabled)
-  CONFIG IESO = OFF ; Internal External Switchover bit (Internal/External Switchover mode is disabled)
-  CONFIG FCMEN = OFF ; Fail-Safe Clock Monitor Enabled bit (Fail-Safe Clock Monitor is disabled)
-  CONFIG LVP = OFF ; Low Voltage Programming Enable bit (((PORTB) and 07Fh), 3 pin has digital I/O, HV on MCLR must be used for programming)
-
-; CONFIG2
-  CONFIG BOR4V = BOR40V ; Brown-out Reset Selection bit (Brown-out Reset set to 4.0V)
-  CONFIG WRT = OFF ; Flash Program Memory Self Write Enable bits (Write protection off)
-PROCESSOR 16F887
-
-;*******************************************************************************
-; Palabra de configuraciÃ³n
-;*******************************************************************************
- ; CONFIG1
-  CONFIG FOSC = INTRC_NOCLKOUT ; Oscillator Selection bits (INTOSCIO oscillator
-    ; : I/O function on ((PORTA) and 07Fh), 6/OSC2/CLKOUT pin, I/O
-    ; function on ((PORTA) and 07Fh), 7/OSC1/CLKIN)
-  CONFIG WDTE = OFF ; Watchdog Timer Enable bit (WDT disabled and
-    ; can be enabled by ((WDTCON) and 07Fh), 0 bit of the WDTCON register)
-  CONFIG PWRTE = OFF ; Power-up Timer Enable bit (PWRT disabled)
-  CONFIG MCLRE = OFF ; ((PORTE) and 07Fh), 3/MCLR pin function select bit (((PORTE) and 07Fh), 3/MCLR pin function is digital input, MCLR internally tied to VDD)
-  CONFIG CP = OFF ; Code Protection bit (Program memory code protection is disabled)
-  CONFIG CPD = OFF ; Data Code Protection bit (Data memory code protection is disabled)
-  CONFIG BOREN = OFF ; Brown Out Reset Selection bits (BOR disabled)
-  CONFIG IESO = OFF ; Internal External Switchover bit (Internal/External Switchover mode is disabled)
-  CONFIG FCMEN = OFF ; Fail-Safe Clock Monitor Enabled bit (Fail-Safe Clock Monitor is disabled)
-  CONFIG LVP = OFF ; Low Voltage Programming Enable bit (((PORTB) and 07Fh), 3 pin has digital I/O, HV on MCLR must be used for programming)
-
-; CONFIG2
-  CONFIG BOR4V = BOR40V ; Brown-out Reset Selection bit (Brown-out Reset set to 4.0V)
-  CONFIG WRT = OFF ; Flash Program Memory Self Write Enable bits (Write protection off)
-;*******************************************************************************
+# 34 "proyecto2.s" 2
+ ;*******************************************************************************
 ; Variables
 ;*******************************************************************************
 PSECT udata_bank0
@@ -2532,6 +2510,8 @@ PSECT udata_bank0
     DS 1
  CONTADOR:
     DS 3
+ CONTADOR_ES:
+    DS 1
  CONT_DIS:
     DS 1
  CONTADOR_F:
@@ -2550,6 +2530,7 @@ PSECT udata_bank0
 ;*******************************************************************************
 PSECT CODE, delta=2, abs
  ORG 0x0000
+    PAGESEL MAIN
     goto MAIN
 ;*******************************************************************************
 ; Vector ISR Interrupciones
@@ -2560,9 +2541,79 @@ PSECT CODE, delta=2, abs
     MOVWF W_TEMP
     SWAPF STATUS, W
     MOVWF STATUS_TEMP
+
+ISR:
+    BTFSC ((INTCON) and 07Fh), 0
+    GOTO ISRRBIF
+    BTFSC ((PIR1) and 07Fh), 0
+    GOTO ISRTMR1
+    BTFSC ((INTCON) and 07Fh), 2
+    GOTO ISRTMR0
+    GOTO SALIDA
+
+ISRRBIF:
+    ;BTFSS INTCON, 0 ; ((INTCON) and 07Fh), 0 = 1 ?
+    ;GOTO ISRTMR1 ; SI NO ESTA ENCENDIDO VAMOS A POP
+    BANKSEL PORTB
+    BTFSS PORTB,0
+    INCF CONTADOR_ES, F
+    BCF ((INTCON) and 07Fh), 0
+    GOTO VERIFICACION_ES0
+    GOTO SALIDA
+
+VERIFICACION_ES0:
+    BANKSEL PORTA
+    MOVF CONTADOR_ES, W
+    SUBLW 0
+    BTFSS STATUS, 2
+    GOTO VERIFICACION_ES1
+    BSF PORTA, 6
+    GOTO SALIDA
+
+VERIFICACION_ES1:
+    BANKSEL PORTA
+    MOVF CONTADOR_ES, W
+    SUBLW 1
+    BTFSS STATUS, 2
+    GOTO VERIFICACION_ES2
+    GOTO SALIDA
+
+VERIFICACION_ES2:
+    BANKSEL PORTA
+    MOVF CONTADOR_ES, W
+    SUBLW 2
+    BTFSS STATUS, 2
+    GOTO VERIFICACION_ES3
+    GOTO SALIDA
+
+VERIFICACION_ES3:
+    BANKSEL PORTA
+    MOVF CONTADOR_ES, W
+    SUBLW 3
+    BTFSS STATUS, 2
+    GOTO VERIFICACION_ES4
+    GOTO SALIDA
+
+VERIFICACION_ES4:
+    BANKSEL PORTA
+    MOVF CONTADOR_ES, W
+    SUBLW 4
+    BTFSS STATUS, 2
+    GOTO VERIFICACION_ES5
+    GOTO SALIDA
+
+VERIFICACION_ES5:
+    BANKSEL PORTA
+    MOVF CONTADOR_ES, W
+    SUBLW 5
+    BTFSS STATUS, 2
+    GOTO VERIFICACION_ES5
+    CLRF CONTADOR_ES
+    GOTO SALIDA
+
 ISRTMR1:
-    BTFSS PIR1, 0 ; ((PIR1) and 07Fh), 0 = 1?
-    GOTO ISR
+    ;BTFSS PIR1, 0 ; ((PIR1) and 07Fh), 0 = 1?
+    ;GOTO ISR
     BCF PIR1, 0 ; Borramos la bandera del ((PIR1) and 07Fh), 0
     MOVLW 0x7C
     MOVWF TMR1L
@@ -2570,17 +2621,19 @@ ISRTMR1:
     MOVWF TMR1H
     INCF NL
 
- ISR:
-    BTFSS INTCON,2 ; ((INTCON) and 07Fh), 2 = 1 ?
-    GOTO ISRRBIF
-    BCF INTCON,2 ; Borramos bandera ((INTCON) and 07Fh), 2
+ISRTMR0:
+    ;BTFSS INTCON,2 ; ((INTCON) and 07Fh), 2 = 1 ?
+    ;GOTO SALIDA
+    BANKSEL TMR0
     MOVLW 220
     MOVWF TMR0 ; CARGAMOS EL VALOR DE N = DESBORDE 50mS
+    BCF ((INTCON) and 07Fh), 2 ; Borramos bandera ((INTCON) and 07Fh), 2
     INCF cont10ms, F
     ;GOTO POP
     GOTO DIS0
 
 DIS0:
+    BANKSEL PORTA
     MOVF CONT_DIS, W
     SUBLW 0 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
        ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO
@@ -2590,7 +2643,8 @@ DIS0:
     MOVLW 0b00000001
     MOVWF PORTA
     INCF CONT_DIS
-    GOTO POP
+    BCF INTCON, 0
+    GOTO SALIDA
 
 DIS1:
     MOVF CONT_DIS, W
@@ -2602,7 +2656,8 @@ DIS1:
     MOVLW 0b00000010
     MOVWF PORTA
     INCF CONT_DIS
-    GOTO POP
+    BCF INTCON, 0
+    GOTO SALIDA
 
 DIS2:
     MOVF CONT_DIS, W
@@ -2614,7 +2669,8 @@ DIS2:
     MOVLW 0b00000100
     MOVWF PORTA
     INCF CONT_DIS
-    GOTO POP
+    BCF INTCON, 0
+    GOTO SALIDA
 DIS3:
     MOVF CONT_DIS, W
     SUBLW 3 ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
@@ -2625,7 +2681,8 @@ DIS3:
     MOVLW 0b00001000
     MOVWF PORTA
     INCF CONT_DIS
-    GOTO POP
+    BCF INTCON, 0
+    GOTO SALIDA
 
 DIS4:
     MOVF CONT_DIS, W
@@ -2637,30 +2694,27 @@ DIS4:
     MOVLW 0b00010000
     MOVWF PORTA
     INCF CONT_DIS
-    GOTO POP
+    BCF INTCON, 0
+    GOTO SALIDA
 
 DIS5:
 
     MOVLW 0b00100000
     MOVWF PORTA
     CLRF CONT_DIS
-    GOTO POP
-
-ISRRBIF:
-    BTFSS INTCON, 0 ; ((INTCON) and 07Fh), 0 = 1 ?
-    GOTO POP ; SI NO ESTA ENCENDIDO VAMOS A POP
-    BCF INTCON, 0
-    GOTO POP
+    ;GOTO POP
 
 
- POP:
+SALIDA:
+    NOP
+POP:
     SWAPF STATUS_TEMP, W
     MOVWF STATUS
     SWAPF W_TEMP, F
     SWAPF W_TEMP, W
     RETFIE
 ;*******************************************************************************
-; CÃ³digo Principal
+; CÃƒÂ³digo Principal
 ;*******************************************************************************
 PSECT CODE, delta=2, abs
  ORG 0x0100
@@ -2671,7 +2725,7 @@ PSECT CODE, delta=2, abs
 MAIN:
     BANKSEL OSCCON
 
-    BCF OSCCON, 6 ; ((OSCCON) and 07Fh), 6 SelecciÃ³n de 2MHz
+    BCF OSCCON, 6 ; ((OSCCON) and 07Fh), 6 SelecciÃƒÂ³n de 2MHz
     BSF OSCCON, 5 ; ((OSCCON) and 07Fh), 5
     BCF OSCCON, 4 ; ((OSCCON) and 07Fh), 4
 
@@ -2692,6 +2746,13 @@ MAIN:
     BSF TRISB, 3
     BSF TRISB, 4
 
+    BANKSEL WPUB
+    BSF WPUB, 0
+    BSF WPUB, 1 ; Habilitando los Pullups en ((PORTB) and 07Fh), 0 y ((PORTB) and 07Fh), 1
+    BSF WPUB, 2
+    BSF WPUB, 3
+    BSF WPUB, 4
+
     BANKSEL OPTION_REG
     BCF OPTION_REG, 7 ; HABILITANDO PULLUPS PUERTO B
     BCF OPTION_REG, 5 ; ((OPTION_REG) and 07Fh), 5: FOSC/4 COMO RELOJ (MODO TEMPORIZADOR)
@@ -2702,26 +2763,25 @@ MAIN:
     BCF OPTION_REG, 0 ; ((OPTION_REG) and 07Fh), 2 -0: PRESCALER 1:128 SELECIONADO
 
     BANKSEL INTCON
-    BSF INTCON, 3 ; Se habilita la interrupciÃ³n del ((INTCON) and 07Fh), 3
+
     BSF INTCON, 7 ; Se habilitan todas las interrupciones por el ((INTCON) and 07Fh), 7
-    BCF INTCON, 2 ; Apagamos la bandera ((INTCON) and 07Fh), 2 del TMR0
     BSF INTCON, 5 ; Habilitando la interrupcion ((INTCON) and 07Fh), 5 TMR0
+    BSF INTCON, 3 ; Se habilita la interrupciÃƒÂ³n del ((INTCON) and 07Fh), 3
+    BCF INTCON, 2 ; Apagamos la bandera ((INTCON) and 07Fh), 2 del TMR0
     BCF INTCON, 0
 
-    BANKSEL IOCB
 
+
+    BANKSEL IOCB
     BSF IOCB, 0
     BSF IOCB, 1 ; Habilitando ((PORTB) and 07Fh), 0 y ((PORTB) and 07Fh), 1 para las ISR de ((INTCON) and 07Fh), 3
     BSF IOCB, 2
     BSF IOCB, 3
     BSF IOCB, 4
-
-    BANKSEL WPUB
-    BSF WPUB, 0
-    BSF WPUB, 1 ; Habilitando los Pullups en ((PORTB) and 07Fh), 0 y ((PORTB) and 07Fh), 1
-    BSF WPUB, 2
-    BSF WPUB, 3
-    BSF WPUB, 4
+    banksel PORTB
+    movf PORTB,W ;Es necesario escribir/leer el puerto y
+   ;limpiar la bndera luego de configurar IOCB
+    bcf ((INTCON) and 07Fh), 0
 
     BANKSEL PIE1
     BSF PIE1, 0
@@ -2742,7 +2802,7 @@ MAIN:
     MOVWF TMR1H
 
 
-    ; ConfiguraciÃ³n TMR0
+    ; ConfiguraciÃƒÂ³n TMR0
 
 
     BANKSEL PORTC
@@ -3221,6 +3281,6 @@ PSECT CODE, ABS, DELTA=2
     RETLW 0b01111001
     RETLW 0b01110001
 ;*******************************************************************************
-; Fin de CÃ³digo
+; Fin de CÃƒÂ³digo
 ;*******************************************************************************
 END

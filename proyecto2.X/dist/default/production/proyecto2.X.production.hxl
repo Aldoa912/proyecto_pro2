@@ -8,16 +8,27 @@
 
 ### Memory Usage ###
  Intel Hex-file ranges:
+<<<<<<< HEAD
   0h - 5h		(dist/default/production\proyecto2.X.production.hex)
-  8h - B1h		(dist/default/production\proyecto2.X.production.hex)
-  C8h - E9h		(dist/default/production\proyecto2.X.production.hex)
+  8h - 101h		(dist/default/production\proyecto2.X.production.hex)
   200h - 56Bh		(dist/default/production\proyecto2.X.production.hex)
   400Eh - 4011h		(dist/default/production\proyecto2.X.production.hex)
  Unused ranges:
   6h - 7h
-  B2h - C7h
-  EAh - 1FFh
+  102h - 1FFh
   56Ch - 400Dh
+=======
+  0h - 1h		(dist/default/production\proyecto2.X.production.hex)
+  8h - 99h		(dist/default/production\proyecto2.X.production.hex)
+  C8h - E9h		(dist/default/production\proyecto2.X.production.hex)
+  200h - 563h		(dist/default/production\proyecto2.X.production.hex)
+  400Eh - 4011h		(dist/default/production\proyecto2.X.production.hex)
+ Unused ranges:
+  2h - 7h
+  9Ah - C7h
+  EAh - 1FFh
+  564h - 400Dh
+>>>>>>> parent of 8737064 (VERSION FUNCIONAL)
 
 ### Hex Memory Map ###
  Legend:
@@ -26,7 +37,7 @@
 ----------------------------------------------------------
          | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
 ----------------------------------------------------------
-00000000 | H1 H1 H1 H1 H1 H1 -- -- H1 H1 H1 H1 H1 H1 H1 H1
+00000000 | H1 H1 -- -- -- -- -- -- H1 H1 H1 H1 H1 H1 H1 H1
 00000010 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000020 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000030 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
@@ -35,12 +46,20 @@
 00000060 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000070 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000080 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+<<<<<<< HEAD
 00000090 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 000000A0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-000000B0 | H1 H1 -- -- -- -- -- -- -- -- -- -- -- -- -- --
+000000B0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+000000C0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+=======
+00000090 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 -- -- -- -- -- --
+----------------------------------------------------------
 000000C0 | -- -- -- -- -- -- -- -- H1 H1 H1 H1 H1 H1 H1 H1
+>>>>>>> parent of 8737064 (VERSION FUNCIONAL)
 000000D0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-000000E0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 -- -- -- -- -- --
+000000E0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+000000F0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00000100 | H1 H1 -- -- -- -- -- -- -- -- -- -- -- -- -- --
 ----------------------------------------------------------
 00000200 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000210 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
@@ -96,7 +115,7 @@
 00000530 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000540 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000550 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-00000560 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 -- -- -- --
+00000560 | H1 H1 H1 H1 -- -- -- -- -- -- -- -- -- -- -- --
 ----------------------------------------------------------
 00004000 | -- -- -- -- -- -- -- -- -- -- -- -- -- -- H1 H1
 00004010 | H1 H1 -- -- -- -- -- -- -- -- -- -- -- -- -- --
