@@ -2563,15 +2563,17 @@ ISRRBIF:
 
 MOD_HORA:
     MOVF CONTADOR_ES, W
-    SUBLW 2
+    SUBLW 3
     BTFSS STATUS, 2
     GOTO SALIDA
     BTFSS PORTB, 1
-    INCF ML, F
+    INCF DL, F
     BTFSS PORTB, 3
-    INCF HL, F
+    INCF AL, F
     BCF ((INTCON) and 07Fh), 0
     GOTO SALIDA
+
+
 ISRTMR1:
     ;BTFSS PIR1, 0 ; ((PIR1) and 07Fh), 0 = 1?
     ;GOTO ISR
@@ -2735,9 +2737,9 @@ MAIN:
 
     BANKSEL IOCB
     BSF IOCB, 0
-    BSF IOCB, 1 ; Habilitando ((PORTB) and 07Fh), 0 y ((PORTB) and 07Fh), 1 para las ISR de ((INTCON) and 07Fh), 3
+    ;BSF IOCB, 1 ; Habilitando ((PORTB) and 07Fh), 0 y ((PORTB) and 07Fh), 1 para las ISR de ((INTCON) and 07Fh), 3
     BSF IOCB, 2
-    BSF IOCB, 3
+    ;BSF IOCB, 3
     BSF IOCB, 4
     banksel PORTB
     movf PORTB,W ;Es necesario escribir/leer el puerto y
@@ -2914,10 +2916,6 @@ VERIFICACION_ES3:
     SUBLW 3
     BTFSS STATUS, 2
     GOTO VERIFICACION_ES4
-    BTFSS PORTB, 1
-    INCF DL, F
-    BTFSS PORTB, 3
-    INCF AL, F
     GOTO DIS_0F
 
 VERIFICACION_ES4:
