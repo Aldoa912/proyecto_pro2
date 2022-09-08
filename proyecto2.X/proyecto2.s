@@ -7,10 +7,8 @@
 ; Hardware: PIC16F887
 ; Creado: 23/08/22
 ;******************************************************************************* 
-PROCESSOR 16F887
-#include <xc.inc>
 ;******************************************************************************* 
-; Palabra de configuraciÃ³n    
+; Palabra de configuraciÃƒÂ³n    
 ;******************************************************************************* 
  ; CONFIG1
   CONFIG  FOSC = INTRC_NOCLKOUT ; Oscillator Selection bits (INTOSCIO oscillator
@@ -30,7 +28,10 @@ PROCESSOR 16F887
 ; CONFIG2
   CONFIG  BOR4V = BOR40V        ; Brown-out Reset Selection bit (Brown-out Reset set to 4.0V)
   CONFIG  WRT = OFF             ; Flash Program Memory Self Write Enable bits (Write protection off)
-;******************************************************************************* 
+
+PROCESSOR 16F887
+#include <xc.inc>
+ ;******************************************************************************* 
 ; Variables    
 ;******************************************************************************* 
 PSECT udata_bank0
@@ -78,6 +79,7 @@ PSECT udata_bank0
 ;******************************************************************************* 
 PSECT CODE, delta=2, abs
  ORG 0x0000
+    PAGESEL MAIN
     goto MAIN
 ;******************************************************************************* 
 ; Vector ISR Interrupciones    
@@ -88,9 +90,28 @@ PSECT CODE, delta=2, abs
     MOVWF W_TEMP
     SWAPF STATUS, W
     MOVWF STATUS_TEMP
+
+ISR:
+    BTFSC   RBIF
+    GOTO    ISRRBIF
+    BTFSC   TMR1IF
+    GOTO    ISRTMR1
+    BTFSC   TMR0IF
+    GOTO    ISRTMR0
+    GOTO    SALIDA
+    
+ISRRBIF:
+    ;BTFSS   INTCON, 0	    ; RBIF = 1 ?
+    ;GOTO    ISRTMR1	    ; SI NO ESTA ENCENDIDO VAMOS A POP
+    BANKSEL PORTB
+    BTFSS   PORTB,0
+    INCF    PORTC, F
+    BCF	    RBIF
+    GOTO    SALIDA
+
 ISRTMR1:
-    BTFSS PIR1, 0	    ; TMR1IF = 1?
-    GOTO ISR
+    ;BTFSS PIR1, 0	    ; TMR1IF = 1?
+    ;GOTO ISR
     BCF PIR1, 0		    ; Borramos la bandera del TMR1IF
     MOVLW 0x7C
     MOVWF TMR1L
@@ -98,17 +119,19 @@ ISRTMR1:
     MOVWF TMR1H
     INCF NL
     
- ISR:
-    BTFSS INTCON,2	   ; T0IF = 1 ?
-    GOTO ISRRBIF
-    BCF INTCON,2	    ; Borramos bandera T0IF 
+ISRTMR0:
+    ;BTFSS INTCON,2	   ; T0IF = 1 ?
+    ;GOTO SALIDA
+    BANKSEL TMR0
     MOVLW 220
     MOVWF TMR0		; CARGAMOS EL VALOR DE N = DESBORDE 50mS
+    BCF T0IF		; Borramos bandera T0IF 
     INCF cont10ms, F
     ;GOTO POP
     GOTO DIS0
     
 DIS0:
+    BANKSEL PORTA
     MOVF CONT_DIS, W
     SUBLW 0		    ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
 			    ; SI ESTA ES 0 SEGUIMOS EN ESTA SUBRUTINA, SINO
@@ -118,7 +141,8 @@ DIS0:
     MOVLW 0b00000001
     MOVWF PORTA
     INCF CONT_DIS
-    GOTO POP
+    BCF INTCON, 0
+    GOTO SALIDA
     
 DIS1:
     MOVF CONT_DIS, W
@@ -130,7 +154,8 @@ DIS1:
     MOVLW 0b00000010
     MOVWF PORTA
     INCF CONT_DIS
-    GOTO POP
+    BCF INTCON, 0
+    GOTO SALIDA
 
 DIS2:
     MOVF CONT_DIS, W
@@ -142,7 +167,8 @@ DIS2:
     MOVLW 0b00000100
     MOVWF PORTA
     INCF CONT_DIS
-    GOTO POP
+    BCF INTCON, 0
+    GOTO SALIDA
 DIS3:
     MOVF CONT_DIS, W
     SUBLW 3		    ; REALIZAMOS UNA COMPARACION DEL VALOR DE CONTADOR
@@ -153,7 +179,8 @@ DIS3:
     MOVLW 0b00001000
     MOVWF PORTA
     INCF CONT_DIS
-    GOTO POP
+    BCF INTCON, 0
+    GOTO SALIDA
     
 DIS4:
     MOVF CONT_DIS, W
@@ -165,32 +192,27 @@ DIS4:
     MOVLW 0b00010000
     MOVWF PORTA
     INCF CONT_DIS
-    GOTO POP
+    BCF INTCON, 0
+    GOTO SALIDA
     
 DIS5:
 
     MOVLW 0b00100000
     MOVWF PORTA
     CLRF CONT_DIS
-    GOTO POP
+    ;GOTO POP
     
-ISRRBIF:
-    BTFSS INTCON, 0	    ; RBIF = 1 ?
-    GOTO POP		    ; SI NO ESTA ENCENDIDO VAMOS A POP
-    BCF INTCON, 0
-    BCF INTCON, 2
-    BCF PIR1, 0
-    GOTO POP
-    
-    
- POP:
+
+SALIDA:
+    NOP
+POP:
     SWAPF STATUS_TEMP, W
     MOVWF STATUS
     SWAPF W_TEMP, F
     SWAPF W_TEMP, W
     RETFIE
 ;******************************************************************************* 
-; CÃ³digo Principal    
+; CÃƒÂ³digo Principal    
 ;******************************************************************************* 
 PSECT CODE, delta=2, abs
  ORG 0x0100
@@ -201,7 +223,7 @@ PSECT CODE, delta=2, abs
 MAIN:
     BANKSEL OSCCON
     
-    BCF OSCCON, 6	; IRCF2 SelecciÃ³n de 2MHz
+    BCF OSCCON, 6	; IRCF2 SelecciÃƒÂ³n de 2MHz
     BSF OSCCON, 5	; IRCF1
     BCF OSCCON, 4	; IRCF0
     
@@ -222,6 +244,13 @@ MAIN:
     BSF TRISB, 3
     BSF TRISB, 4
     
+    BANKSEL WPUB
+    BSF WPUB, 0
+    BSF WPUB, 1		; Habilitando los Pullups en RB0 y RB1
+    BSF WPUB, 2
+    BSF WPUB, 3
+    BSF WPUB, 4
+    
     BANKSEL OPTION_REG
     BCF OPTION_REG, 7	; HABILITANDO PULLUPS PUERTO B
     BCF OPTION_REG, 5	; T0CS: FOSC/4 COMO RELOJ (MODO TEMPORIZADOR)
@@ -232,28 +261,25 @@ MAIN:
     BCF OPTION_REG, 0	; PS2-0: PRESCALER 1:128 SELECIONADO 
     
     BANKSEL INTCON
-
-    BSF INTCON,	3	; Se habilita la interrupciÃ³n del RBIE
+    
     BSF INTCON, 7	; Se habilitan todas las interrupciones por el GIE
-    BCF INTCON, 2	; Apagamos la bandera T0IF del TMR0
     BSF INTCON, 5	; Habilitando la interrupcion T0IE TMR0
+    BSF INTCON,	3	; Se habilita la interrupciÃƒÂ³n del RBIE
+    BCF INTCON, 2	; Apagamos la bandera T0IF del TMR0 
     BCF INTCON, 0
-
+    
+   
     
     BANKSEL IOCB
-    
     BSF IOCB, 0
     BSF IOCB, 1		; Habilitando RB0 y RB1 para las ISR de RBIE
     BSF IOCB, 2
     BSF IOCB, 3
     BSF IOCB, 4
-    
-    BANKSEL WPUB
-    BSF WPUB, 0
-    BSF WPUB, 1		; Habilitando los Pullups en RB0 y RB1
-    BSF WPUB, 2
-    BSF WPUB, 3
-    BSF WPUB, 4
+    banksel PORTB
+    movf    PORTB,W	;Es necesario escribir/leer el puerto y 
+			;limpiar la bndera luego de configurar IOCB
+    bcf	    RBIF
     
     BANKSEL PIE1
     BSF PIE1, 0
@@ -274,7 +300,7 @@ MAIN:
     MOVWF TMR1H
     
     
-    ; ConfiguraciÃ³n TMR0
+    ; ConfiguraciÃƒÂ³n TMR0
 
     
     BANKSEL PORTC
@@ -348,12 +374,13 @@ SETCONTADOR:
     INCF DL
     INCF AH
     
-   
+  
    
 LOOP:
 
     GOTO DIS_0
     
+
     
 DIS_0:
     MOVF CONT_DIS, W
@@ -752,6 +779,6 @@ PSECT CODE, ABS, DELTA=2
     RETLW 0b01111001
     RETLW 0b01110001
 ;******************************************************************************* 
-; Fin de CÃ³digo    
+; Fin de CÃƒÂ³digo    
 ;******************************************************************************* 
 END   
