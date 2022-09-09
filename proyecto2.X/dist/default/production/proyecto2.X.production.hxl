@@ -11,13 +11,13 @@
   0h - 5h		(dist/default/production\proyecto2.X.production.hex)
   8h - C5h		(dist/default/production\proyecto2.X.production.hex)
   C8h - E9h		(dist/default/production\proyecto2.X.production.hex)
-  200h - 8E9h		(dist/default/production\proyecto2.X.production.hex)
+  200h - 90Bh		(dist/default/production\proyecto2.X.production.hex)
   400Eh - 4011h		(dist/default/production\proyecto2.X.production.hex)
  Unused ranges:
   6h - 7h
   C6h - C7h
   EAh - 1FFh
-  8EAh - 400Dh
+  90Ch - 400Dh
 
 ### Hex Memory Map ###
  Legend:
@@ -152,7 +152,9 @@
 000008B0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 000008C0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 000008D0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
-000008E0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 -- -- -- -- -- --
+000008E0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+000008F0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00000900 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 -- -- -- --
 ----------------------------------------------------------
 00004000 | -- -- -- -- -- -- -- -- -- -- -- -- -- -- H1 H1
 00004010 | H1 H1 -- -- -- -- -- -- -- -- -- -- -- -- -- --

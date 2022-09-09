@@ -2519,7 +2519,7 @@ PSECT udata_bank0
  CONTADOR_ES:
     DS 1
  FLAG:
-    DS 1
+    DS 2
  W_TEMP:
     DS 1
  STATUS_TEMP:
@@ -2739,10 +2739,10 @@ MAIN:
 
     BANKSEL IOCB
     BSF IOCB, 0
-    BSF IOCB, 1 ; Habilitando ((PORTB) and 07Fh), 0 y ((PORTB) and 07Fh), 1 para las ISR de ((INTCON) and 07Fh), 3
+    BSF IOCB, 1
     BSF IOCB, 2
     BSF IOCB, 3
-    BSF IOCB, 4
+    BSF IOCB, 4 ; Habilitando ((PORTB) and 07Fh), 0 y ((PORTB) and 07Fh), 1 para las ISR de ((INTCON) and 07Fh), 3
     banksel PORTB
     movf PORTB,W ;Es necesario escribir/leer el puerto y
    ;limpiar la bndera luego de configurar IOCB
@@ -2776,8 +2776,25 @@ MAIN:
     CLRF PORTA
 
 
+    CLRF CONTADOR_M
+    CLRF CONTADOR_ES
+    CLRF CONTADOR
+    CLRF CONTADOR_F
+    CLRF CONTADOR_ES
+    CLRF CONT_DIS
     CLRF CONT20MS
     CLRF CONT_DIS
+    CLRF NL
+    CLRF NH
+    CLRF ML
+    CLRF MH
+    CLRF HL
+    CLRF HH
+    CLRF DL
+    CLRF DH
+    CLRF AL
+    CLRF AH
+    CLRF FLAG
     MOVLW 220
     MOVWF TMR0 ; CARGAMOS EL VALOR DE N = DESBORDE 50mS
 
@@ -2886,25 +2903,25 @@ INC_TEMPM:
     BTFSS FLAG, 1
     RETURN
     INCF ML
-    BCF FLAG, 1
+    CLRF FLAG
     RETURN
 DEC_TEMPM: ;REVISAR UNDERFLOW
     BTFSS FLAG, 2
     RETURN
     DECF ML
-    BCF FLAG, 2
+    CLRF FLAG
     RETURN
 INC_TEMPH:
     BTFSS FLAG, 3
     RETURN
     INCF HL
-    BCF FLAG, 3
+    CLRF FLAG
     RETURN
 DEC_TEMPH: ;REVISAR UNDERFLOW
     BTFSS FLAG, 4
     RETURN
     DECF HL
-    BCF FLAG, 4
+    CLRF FLAG
     RETURN
 INC_M:
     MOVF ML, W
@@ -2961,13 +2978,13 @@ INC_FECHD:
     BTFSS FLAG, 1
     RETURN
     INCF DL
-    BCF FLAG, 1
+    CLRF FLAG
     RETURN
 DEC_FECHD: ;REVISAR UNDERFLOW
     BTFSS FLAG, 2
     RETURN
     DECF DL
-    BCF FLAG, 2
+    CLRF FLAG
     RETURN
 INC_FECHA:
     BTFSS FLAG, 3
@@ -2975,14 +2992,14 @@ INC_FECHA:
     INCF AL
     INCF CONTADOR_M, F
     INCF PORTC
-    BCF FLAG, 3
+    CLRF FLAG
     RETURN
 DEC_FECHA: ;REVISAR UNDERFLOW
     BTFSS FLAG, 4
     RETURN
     DECF AL
     DECF CONTADOR_M, F
-    BCF FLAG, 4
+   CLRF FLAG
     RETURN
 INC_D:
     MOVF DL, W
